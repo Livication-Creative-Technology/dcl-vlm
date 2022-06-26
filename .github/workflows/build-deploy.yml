@@ -13,7 +13,7 @@ jobs:
   install:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@main
       - name: Use Node.js 16.x
         uses: actions/setup-node@v1
         with:
@@ -23,7 +23,7 @@ jobs:
       - name: build
         run: npm run build
       - name: Publish
-        uses: menduz/oddish-action@master
+        uses: menduz/oddish-action@main
         with:
           #cwd: ./dist
           access: public
