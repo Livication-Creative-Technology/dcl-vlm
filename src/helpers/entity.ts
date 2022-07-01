@@ -1,6 +1,7 @@
-import { TImage } from "../types/TImage";
+import { TEntity, TEntityInstance } from "../types/Entity";
+import { TVideoScreen, TVideoScreenInstance } from "../types/VideoScreen";
 
-export function getId(ref: TImage) {
+export function getId(ref: TEntity | TEntityInstance) {
   return ref.customId || ref.id;
 }
 
