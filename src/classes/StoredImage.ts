@@ -3,6 +3,7 @@ import { recordEvent } from "../analytics";
 import { sdkImageFlippedDimension, sdkImagesAreFlipped, sdkImagesFace, vlmImagesFace } from "../helpers/defaults";
 import { getEntityByName } from "../helpers/entity";
 import { IEmission, ITexture, ITransform } from "../interfaces/index";
+import { sceneFeatures } from "../sceneData";
 import { imageInstances, imageMaterials } from "../storage";
 import { EClickEventType, TClickEvent, TImageInstanceConfig, TImageMaterialConfig, TTransform } from "../types/index";
 import { StoredEntityInstance } from "./StoredEntity";
@@ -241,8 +242,8 @@ export class StoredImageInstance extends StoredEntityInstance implements ITransf
       new Transform({
         position: new Vector3(position.x, position.y, position.z),
         scale: new Vector3(scale.x, scale.y, scale.z),
-        rotation: Quaternion.Euler(rotation.x, rotation.y, rotation.z),
-      }),
+        rotation: Quaternion.Euler(rotation.x, rotation.y, rotation.z)
+      })
     );
   };
 
@@ -272,7 +273,7 @@ export class StoredImageInstance extends StoredEntityInstance implements ITransf
   trackClickEvent: CallableFunction = (clickEvent: TClickEvent, id: string) => {
     const trackingId = clickEvent.trackingId || id;
 
-    if (clickEvent.hasTracking) {
+    if (clickEvent.hasTracking && sceneFeatures.analytics) {
       recordEvent(trackingId);
     }
   };
@@ -303,7 +304,7 @@ export class StoredImageInstance extends StoredEntityInstance implements ITransf
             openExternalURL(clickEvent.externalLink);
             this.trackClickEvent(clickEvent, `click-event-(external-link)-${this.customId || this.id}`);
           },
-          { showFeedback, hoverText },
+          { showFeedback, hoverText }
         );
         break;
       case EClickEventType.SOUND: //play a sound
@@ -314,7 +315,7 @@ export class StoredImageInstance extends StoredEntityInstance implements ITransf
             source.playOnce();
             this.trackClickEvent(clickEvent, `click-event-(sound)-${this.customId || this.id}`);
           },
-          { showFeedback, hoverText },
+          { showFeedback, hoverText }
         );
         break;
       case EClickEventType.MOVE: // move player
@@ -323,7 +324,7 @@ export class StoredImageInstance extends StoredEntityInstance implements ITransf
             movePlayerTo(clickEvent.moveTo.position, clickEvent.moveTo.cameraTarget);
             this.trackClickEvent(clickEvent, `click-event-(move-player)-${this.customId || this.id}`);
           },
-          { showFeedback, hoverText },
+          { showFeedback, hoverText }
         );
         break;
       case EClickEventType.TELEPORT: // teleport player
@@ -332,7 +333,7 @@ export class StoredImageInstance extends StoredEntityInstance implements ITransf
             teleportTo(clickEvent.teleportTo);
             this.trackClickEvent(clickEvent, `click-event-(teleport-player)-${this.customId || this.id}`);
           },
-          { showFeedback, hoverText },
+          { showFeedback, hoverText }
         );
         break;
     }
