@@ -140,9 +140,6 @@ export class StoredImageMaterial extends Material implements ITexture, IEmission
   createInstance: CallableFunction = (_config: TImageInstanceConfig) => {
     this.instanceIds.push(_config.id);
     new StoredImageInstance(this, _config);
-    if (_config.customId) {
-      imageInstances[_config.customId] = imageInstances[_config.id];
-    }
     imageInstances[_config.id].add();
   };
 
@@ -194,6 +191,10 @@ export class StoredImageInstance extends StoredEntityInstance implements ITransf
       this.updateParent(this.parent);
     } else if (this.show) {
       this.add();
+    }
+
+    if (this.customId) {
+      imageInstances[this.customId] = imageInstances[this.id];
     }
   }
 
