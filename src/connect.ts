@@ -1,21 +1,51 @@
 import { getParcel } from "@decentraland/ParcelIdentity";
 import { TWebSocketMessage } from "./types/WebSocketMessage";
 import { VLMInterval } from "./components/interval";
-import { createAudioStream, deleteAudioStream, updateAudioStream } from "./audio";
+import {
+  createAudioStream,
+  deleteAudioStream,
+  updateAudioStream,
+} from "./audio";
 import { createDialog, deleteDialog, updateDialog } from "./dialogs";
-import { createImage, updateImage, updateImageInstance, createImageInstance, deleteImage, deleteImageInstance } from "./images";
-import { createNft, createNftInstance, deleteNft, deleteNftInstance, updateNft, updateNftInstance } from "./nfts";
-import { createVideoScreen, updateVideoScreen, updateVideoInstance, createVideoInstance, deleteVideoScreen, deleteVideoInstance } from "./videos";
+import {
+  createImage,
+  updateImage,
+  updateImageInstance,
+  createImageInstance,
+  deleteImage,
+  deleteImageInstance,
+} from "./images";
+import {
+  createNft,
+  createNftInstance,
+  deleteNft,
+  deleteNftInstance,
+  updateNft,
+  updateNftInstance,
+} from "./nfts";
+import {
+  createVideoScreen,
+  updateVideoScreen,
+  updateVideoInstance,
+  createVideoInstance,
+  deleteVideoScreen,
+  deleteVideoInstance,
+} from "./videos";
 import { updateCustomization, deleteCustomization } from "./custom";
 import { updateSceneData, updateSceneFeatures } from "./sceneData";
 import { updateModeration } from "./moderation";
 import { initScene } from "./init";
-import { checkPreviewMode, isPreview, runLocalServer, runStagingServer } from "./environment";
+import {
+  checkPreviewMode,
+  isPreview,
+  runLocalServer,
+  runStagingServer,
+} from "./environment";
 
 export let sceneDataUrl = "wss://api.dcl-vlm.io/wss/";
 
-let initialized;
-let socketConnector;
+let initialized: boolean = false;
+let socketConnector: Entity;
 let connecting = false;
 let connected = false;
 
@@ -72,7 +102,10 @@ export const connectCMS = async () => {
       engine.addEntity(socketdelay);
       socketdelay.addComponent(
         new VLMInterval(10000, () => {
-          if (socketdelay.getComponentOrNull(VLMInterval) && (!connected || connecting)) {
+          if (
+            socketdelay.getComponentOrNull(VLMInterval) &&
+            (!connected || connecting)
+          ) {
             socketdelay.removeComponent(VLMInterval);
             engine.removeEntity(socketdelay);
             return;

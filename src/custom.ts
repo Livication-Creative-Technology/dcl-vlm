@@ -1,4 +1,7 @@
-import { TCustomizationConfig, TCustomizationConfigs } from "./types/Customization";
+import {
+  TCustomizationConfig,
+  TCustomizationConfigs,
+} from "./types/Customization";
 
 export const customizationConfigs: TCustomizationConfigs = {};
 
@@ -12,7 +15,7 @@ export const setCustomizationState = (configs: TCustomizationConfig[]) => {
       value: config.value,
       update: (config: TCustomizationConfig) => {
         log(config);
-      }
+      },
     };
   });
 };
@@ -35,20 +38,28 @@ export const setCustomizationFunctions = (configs: TCustomizationConfig[]) => {
 export const initCustomizations = () => {
   Object.keys(customizationConfigs).forEach((customizationConfigId: string) => {
     const config = customizationConfigs[customizationConfigId];
-    if (!config) {
+    if (!customizationConfigs || !config) {
+      return;
     }
-    if (config.init) {
-      customizationConfigs[customizationConfigId].init(config);
-    } else {
-      customizationConfigs[customizationConfigId].update(config);
+    if (config?.init) {
+      config.init(config);
+    } else if (config?.update) {
+      config.update(config);
     }
   });
   return customizationConfigs;
 };
 
-export const updateCustomization = (customization: TCustomizationConfig, customizationId: string) => {
+export const updateCustomization = (
+  customization: TCustomizationConfig,
+  customizationId: string
+) => {
   if (!customizationConfigs[customizationId]) {
-    customizationConfigs[customizationId] = { id: customization.id, value: customization.value, update: () => {} };
+    customizationConfigs[customizationId] = {
+      id: customization.id,
+      value: customization.value,
+      update: () => {},
+    };
   }
   customizationConfigs[customizationId].value = customization.value;
   customizationConfigs[customizationId].update(customization);
@@ -56,11 +67,14 @@ export const updateCustomization = (customization: TCustomizationConfig, customi
 
 export const deleteCustomization = (customizationId: string) => {
   const config = customizationConfigs[customizationId];
+  if (!config) {
+    return;
+  }
   config.value = false;
-  if (config.delete) {
-    customizationConfigs[customizationId].delete(config);
-  } else {
-    customizationConfigs[customizationId].update(config);
+  if (config?.delete) {
+    config.delete(config);
+  } else if (config?.update) {
+    config.update(config);
   }
   delete customizationConfigs[customizationId];
 };

@@ -28,7 +28,7 @@ export class StoredEntityMaterial extends Material implements ITexture, IEmissio
   specularIntensity = 0;
   metallic = 0;
   emissiveColor = Color3.White();
-  emissiveIntensity: number;
+  emissiveIntensity?: number;
   clickEvent?: TClickEvent;
 
   constructor(_config: TEntityMaterialConfig) {
@@ -92,14 +92,15 @@ export class StoredEntityInstance extends Entity {
   rotation: TTransform;
   clickEvent?: TClickEvent;
   defaultClickEvent?: TClickEvent;
-  modifiedTransform: { position: TTransform; scale: TTransform; rotation: TTransform };
+  modifiedTransform?: { position: TTransform; scale: TTransform; rotation: TTransform };
 
   constructor(_material: StoredEntityMaterial | StoredEntityConfig, _instance: TEntityInstanceConfig) {
     const id = _instance.id;
     super(`${_instance.name} - ${id}`);
     this.id = id;
-    this.customId = _instance.customId;
     this.show = _instance.show;
+    this.name = _instance.name;
+    this.customId = _instance.customId;
     this.parent = _instance.parent;
     this.position = _instance.position;
     this.scale = _instance.scale;

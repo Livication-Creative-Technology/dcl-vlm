@@ -2,16 +2,16 @@ import { TEntityInstanceConfig } from "./Entity";
 import { TTransform } from "./Transform";
 
 export type TNFTConfig = {
-  id?: string;
+  id: string;
   customId?: string;
   parent?: string;
   instances?: TNFTInstanceConfig[];
-  chain?: number | string;
-  contractAddress?: string;
+  chain: number | string;
+  contractAddress: string;
   itemId?: number | string;
   tokenId?: number | string;
   style?: PictureFrameStyle;
-  show?: boolean;
+  show: boolean;
   color?: string;
   withCollisions?: boolean;
 };

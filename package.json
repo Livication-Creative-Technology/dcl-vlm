@@ -33,7 +33,7 @@
     "rollup": "^2.70.1",
     "rollup-plugin-terser": "^7.0.2",
     "tslib": "^2.4.0",
-    "decentraland-ecs": "^6.11.2"
+    "decentraland-ecs": "^6.11.14"
   },
   "engines": {
     "node": ">=16.0.0",

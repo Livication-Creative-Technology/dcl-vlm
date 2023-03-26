@@ -22,4 +22,5 @@ export type TSceneFeatures = {
   dialogs: boolean;
   entityPlacement: boolean;
   moderation: boolean;
+  [id: string]: boolean;
 };

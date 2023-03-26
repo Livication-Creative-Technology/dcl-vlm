@@ -1,4 +1,8 @@
-import { TImageMaterialConfig, TNFTConfig, TVideoMaterialConfig } from "../types";
+import {
+  TImageMaterialConfig,
+  TNFTConfig,
+  TVideoMaterialConfig,
+} from "../types";
 import { TDialogConfig } from "../types/Dialog";
 import { TEventConfig } from "../types/Event";
 import { TFeatureConfig } from "../types/Feature";
@@ -22,4 +26,5 @@ export class SceneFeatures {
   dialogs: boolean = false;
   entityPlacement: boolean = false;
   moderation: boolean = false;
+  [id: string]: boolean;
 }
