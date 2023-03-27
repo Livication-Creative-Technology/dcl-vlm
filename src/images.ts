@@ -11,22 +11,29 @@ export const initImages = (images: Array<TImageMaterialConfig>) => {
   });
 };
 
-export const createImage = (imageConfig: TImageMaterialConfig) => {
+export const createImage = (imageConfig: TImageMaterialConfig, startVisible: boolean = true) => {
   if (!imageConfig.show) {
     return;
   }
-  new StoredImageMaterial(imageConfig);
+  return new StoredImageMaterial(imageConfig, startVisible);
 };
 
-export const createImageInstance = (material: TImageMaterialConfig, instance: TImageInstanceConfig) => {
+export const createImageInstance = (
+  material: TImageMaterialConfig,
+  instance: TImageInstanceConfig
+) => {
   if (!material.show || !instance.show) {
     return;
   }
   const imageId = material.id;
-  imageMaterials[imageId].createInstance(instance);
+  return imageMaterials[imageId].createInstance(instance);
 };
 
-export const updateImage = (imageConfig: TImageMaterialConfig | any, property: string, id: string) => {
+export const updateImage = (
+  imageConfig: TImageMaterialConfig | any,
+  property: string,
+  id: string
+) => {
   const image: StoredImageMaterial = imageMaterials[imageConfig.id];
 
   if (!imageConfig || (!image && !imageConfig.show)) {
@@ -60,7 +67,11 @@ export const updateImage = (imageConfig: TImageMaterialConfig | any, property: s
   }
 };
 
-export const updateImageInstance = (instanceConfig: TImageInstanceConfig, property: string, id: string) => {
+export const updateImageInstance = (
+  instanceConfig: TImageInstanceConfig,
+  property: string,
+  id: string
+) => {
   const instance = imageInstances[id],
     materialId = instance.materialId,
     material = imageMaterials[materialId];

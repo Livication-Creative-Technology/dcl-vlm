@@ -8,22 +8,25 @@ import { setCustomizationState } from "./custom";
 import { LoadingQueue } from "./loadingQueue";
 import { UIMessageSystem } from "./ui";
 
-export const initScene = (message: any) => {
-  if (message.features.analytics) {
-    initAnalytics();
-  }
-  if (message.features.moderation) {
-    initModeration();
-  }
-  if (message.features.entityPlacement) {
-    new LoadingQueue(message);
-  }
-  if (message.features.customizations) {
-    setCustomizationState(message.sceneData.customizations);
-  }
-  // TODO: Implement dialog feature
-  // if (features.dialogs) {
-  //   initDialogs(sceneData.dialogs);
-  // }
-  engine.addSystem(new UIMessageSystem());
-};
+export const initScene = async (message: any) =>
+  new Promise(async (resolve, reject) => {
+    if (message.features.analytics) {
+      initAnalytics();
+    }
+    if (message.features.moderation) {
+      initModeration();
+    }
+    if (message.features.entityPlacement) {
+      const loadingQueue = new LoadingQueue(message);
+      await loadingQueue.loadingPromise;
+    }
+    if (message.features.customizations) {
+      setCustomizationState(message.sceneData.customizations);
+    }
+    // TODO: Implement dialog feature
+    // if (features.dialogs) {
+    //   initDialogs(sceneData.dialogs);
+    // }
+    engine.addSystem(new UIMessageSystem());
+    resolve();
+  });

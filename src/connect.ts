@@ -62,13 +62,13 @@ const reconnect = () => {
         return;
       }
       log("Attempting to reconnect to websocket");
-      await connectCMS();
+      await connectCMS;
     })
   );
 };
 
-export const connectCMS = async () => {
-  const connectPromise = new Promise(async (resolve, reject) => {
+export const connectCMS = () =>
+  new Promise(async (resolve, reject) => {
     connecting = true;
     const parcel = await getParcel();
     const baseParcel = parcel.land.sceneJsonData.scene.base;
@@ -122,7 +122,7 @@ export const connectCMS = async () => {
       reconnect();
     };
 
-    socket.onmessage = (event) => {
+    socket.onmessage = async (event) => {
       // log(`VLM-DEBUG: socket event | `, event);
       const wsMessage: TWebSocketMessage = JSON.parse(event.data);
       // log(`VLM-DEBUG: received message to ${message.action} ${message.entity || ""} ${message.property || ""}`);
@@ -131,16 +131,18 @@ export const connectCMS = async () => {
         return;
       }
 
-      updateSceneData(wsMessage.sceneData);
-      updateSceneFeatures(wsMessage.features);
-
+      if (wsMessage.sceneData) {
+        updateSceneData(wsMessage.sceneData);
+      }
+      if (wsMessage.features) {
+        updateSceneFeatures(wsMessage.features);
+      }
       switch (wsMessage.action) {
         case "init":
           if (!initialized) {
-            initScene(wsMessage);
+            await initScene(wsMessage);
+            resolve();
           }
-          initialized = true;
-          resolve();
           break;
         case "create":
           createEntity(wsMessage);
@@ -157,8 +159,6 @@ export const connectCMS = async () => {
       }
     };
   });
-  return connectPromise;
-};
 
 const createEntity = (message: any) => {
   switch (message.entity) {

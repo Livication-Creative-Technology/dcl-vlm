@@ -15,10 +15,7 @@ export const createVideoScreen = (videoConfig: TVideoMaterialConfig) => {
   if (!videoConfig.show) {
     return;
   }
-
-  const videoId = videoConfig.id;
-
-  new StoredVideoMaterial(videoConfig);
+  return new StoredVideoMaterial(videoConfig);
 };
 
 export const createVideoInstance = (material: StoredVideoMaterial, instance: TVideoInstanceConfig) => {
@@ -26,7 +23,7 @@ export const createVideoInstance = (material: StoredVideoMaterial, instance: TVi
     return;
   }
   const videoId = material.id;
-  videoMaterials[videoId].createInstance(instance);
+  return videoMaterials[videoId].createInstance(instance);
 };
 
 export const updateVideoScreen = (videoConfig: TVideoMaterialConfig, property: string, id: string) => {

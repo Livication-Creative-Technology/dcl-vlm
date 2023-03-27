@@ -41,8 +41,9 @@ export class StoredImageMaterial
   withCollisions?: boolean;
   isTransparent: boolean;
   clickEvent?: TClickEvent;
+  startVisible: boolean;
 
-  constructor(_config: TImageMaterialConfig) {
+  constructor(_config: TImageMaterialConfig, startVisible: boolean = true) {
     super();
     this.id = _config.id;
     this.customId = _config.customId;
@@ -54,6 +55,7 @@ export class StoredImageMaterial
     this.withCollisions = _config.withCollisions;
     this.isTransparent = _config.isTransparent;
     this.clickEvent = _config.clickEvent;
+    this.startVisible = startVisible;
     this.updateTexture(this.imageLink);
     imageMaterials[this.id] = this;
 
@@ -153,8 +155,11 @@ export class StoredImageMaterial
 
   createInstance: CallableFunction = (_config: TImageInstanceConfig) => {
     this.instanceIds.push(_config.id);
-    new StoredImageInstance(this, _config);
-    imageInstances[_config.id].add();
+    imageInstances[_config.id] = new StoredImageInstance(this, _config);
+    if (this.startVisible) {
+      imageInstances[_config.id].add();
+    }
+    return imageInstances[_config.id];
   };
 
   deleteInstance: CallableFunction = (instanceId: string) => {
@@ -204,7 +209,6 @@ export class StoredImageInstance
     this.clickEvent = _instance.clickEvent;
     this.defaultClickEvent = _material.clickEvent;
     this.withCollisions = _instance.withCollisions || _material.withCollisions;
-    imageInstances[this.id] = this;
     const shape = new PlaneShape();
     shape.withCollisions = !!this.withCollisions;
     this.addComponent(shape);
@@ -212,10 +216,8 @@ export class StoredImageInstance
     this.updateTransform(this.position, this.scale, this.rotation);
     this.updateDefaultClickEvent(_material.clickEvent);
 
-    if (this.parent && this.show && !this.customRendering) {
+    if (this.parent && this.show) {
       this.updateParent(this.parent);
-    } else if (this.show) {
-      this.add();
     }
 
     if (this.customId) {

@@ -27,8 +27,9 @@ export class StoredNFTConfig extends StoredEntityConfig {
   color?: Color3;
   style: PictureFrameStyle = PictureFrameStyle.Classic;
   isTransparent: boolean = false;
+  startVisible: boolean;
 
-  constructor(_config: TNFTConfig) {
+  constructor(_config: TNFTConfig, startVisible: boolean = true) {
     super(_config);
     let chain = this.getChainName(_config.chain);
     this.nftLink = `${chain}://${_config.contractAddress}/${_config.tokenId}`;
@@ -45,7 +46,7 @@ export class StoredNFTConfig extends StoredEntityConfig {
     this.withCollisions = !!_config.withCollisions;
     this.tokenId = _config.tokenId;
     this.show = _config.show;
-    nftConfigs[this.id] = this;
+    this.startVisible = startVisible;
 
     if (this.customId) {
       nftConfigs[this.customId] = nftConfigs[this.id];
@@ -147,7 +148,10 @@ export class StoredNFTConfig extends StoredEntityConfig {
     if (_config.customId) {
       nftInstances[_config.customId] = nftInstances[_config.id];
     }
-    nftInstances[_config.id].add();
+    if (this.startVisible) {
+      nftInstances[_config.id].add();
+    }
+    return nftInstances[_config.id];
   };
 
   deleteInstance: CallableFunction = (instanceId: string) => {
@@ -252,7 +256,6 @@ export class StoredNFTInstance
     scale: TTransform,
     rotation: TTransform
   ) => {
-
     this.addComponentOrReplace(
       new Transform({
         position: new Vector3(position.x, position.y, position.z),

@@ -11,22 +11,32 @@ export const initNfts = (nftScreens: Array<TNFTConfig>) => {
   });
 };
 
-export const createNft = (nftConfig: TNFTConfig) => {
+export const createNft = (
+  nftConfig: TNFTConfig,
+  startVisible: boolean = true
+) => {
   if (!nftConfig.show) {
     return;
   }
-  new StoredNFTConfig(nftConfig);
+  return new StoredNFTConfig(nftConfig, startVisible);
 };
 
-export const createNftInstance = (shape: TNFTConfig, instance: TNFTInstanceConfig) => {
+export const createNftInstance = (
+  shape: TNFTConfig,
+  instance: TNFTInstanceConfig
+) => {
   if (!shape.show || !instance.show) {
     return;
   }
   const nftId = shape.id;
-  nftConfigs[nftId].createInstance(instance);
+  return nftConfigs[nftId].createInstance(instance);
 };
 
-export const updateNft = (nftConfig: TNFTConfig | any, property: string, id: string) => {
+export const updateNft = (
+  nftConfig: TNFTConfig | any,
+  property: string,
+  id: string
+) => {
   const nft: StoredNFTConfig = nftConfigs[nftConfig.id];
 
   if (!nftConfig || (!nft && !nftConfig.show)) {
@@ -55,7 +65,11 @@ export const updateNft = (nftConfig: TNFTConfig | any, property: string, id: str
   }
 };
 
-export const updateNftInstance = (instanceConfig: TNFTInstanceConfig, property: string, id: string) => {
+export const updateNftInstance = (
+  instanceConfig: TNFTInstanceConfig,
+  property: string,
+  id: string
+) => {
   const instance = nftInstances[id],
     materialId = instance.materialId,
     material = nftConfigs[materialId];

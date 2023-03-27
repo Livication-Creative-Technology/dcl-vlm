@@ -53,11 +53,12 @@ export class StoredVideoMaterial
   clickEvent?: TClickEvent;
   withCollisions: boolean;
   videoClipId?: string;
+  startVisible: boolean;
   public emissiveIntensity: number;
   public offType: EVideoSourceTypes;
   public offImageLink?: string;
 
-  constructor(_config: TVideoMaterialConfig) {
+  constructor(_config: TVideoMaterialConfig, startVisible: boolean = true) {
     super(_config);
     this.id = _config.id;
     this.customId = _config.customId;
@@ -76,7 +77,7 @@ export class StoredVideoMaterial
       ? EVideoSourceTypes.LIVE
       : this.offType;
     this.updateTexture(this.liveLink);
-    videoMaterials[this.id] = this;
+    this.startVisible = startVisible;
 
     if (this.customId) {
       videoMaterials[this.customId] = videoMaterials[this.id];
@@ -129,6 +130,7 @@ export class StoredVideoMaterial
     if (_config.customId) {
       videoInstances[_config.customId] = videoInstances[_config.id];
     }
+    return videoInstances[_config.id];
   };
 
   removeInstance: CallableFunction = (instanceId: string) => {
