@@ -12,9 +12,11 @@ import { createVideoScreen } from "./videos";
 
 export class LoadingQueue implements ISystem {
   static items: TLoadingQueueItem[] = [];
+  loadingFrame: boolean = false;
+  loadingTime: number = 0;
 
   constructor(message: TWebSocketMessage) {
-    log('constructing loading queue')
+    log("constructing loading queue");
     message.sceneData.images?.forEach((image: TImageMaterialConfig) => {
       LoadingQueue.items.push({ type: EEntityType.IMAGE, data: image });
     });
@@ -29,16 +31,29 @@ export class LoadingQueue implements ISystem {
   }
 
   update(dt: number): void {
-    if (LoadingQueue.items.length) {
+    this.loadingTime += dt;
+    this.loadingFrame = !this.loadingFrame;
+
+    // if (!this.loadingFrame) {
+    //   return;
+    // }
+
+    if (LoadingQueue.items.length >= 3) {
+      this.loadNextItem();
+      this.loadNextItem();
+      this.loadNextItem();
+      log(`${LoadingQueue.items.length} items remain - frame delay: ${dt}`);
+    } else if (LoadingQueue.items.length) {
       this.loadNextItem();
       log(`${LoadingQueue.items.length} items remain - frame delay: ${dt}`);
     } else {
+      log(`VLM Load in time was ${this.loadingTime} seconds`);
       engine.removeSystem(this);
     }
   }
 
   loadNextItem: CallableFunction = () => {
-    log(LoadingQueue.items)
+    log(LoadingQueue.items);
     const nextItem = LoadingQueue.items.shift();
 
     if (!nextItem) {
