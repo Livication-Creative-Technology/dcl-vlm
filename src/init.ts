@@ -5,6 +5,8 @@ import { initVideoScreens } from "./videos";
 import { initNfts } from "./nfts";
 // import { initDialogs } from "./dialogs";
 import { setCustomizationState } from "./custom";
+import { LoadingQueue } from "./loadingQueue";
+import { UIMessageSystem } from "./ui";
 
 export const initScene = (message: any) => {
   if (message.features.analytics) {
@@ -14,9 +16,7 @@ export const initScene = (message: any) => {
     initModeration();
   }
   if (message.features.entityPlacement) {
-    initImages(message.sceneData.images);
-    initVideoScreens(message.sceneData.videoScreens);
-    initNfts(message.sceneData.nfts);
+    new LoadingQueue(message);
   }
   if (message.features.customizations) {
     setCustomizationState(message.sceneData.customizations);
@@ -25,4 +25,5 @@ export const initScene = (message: any) => {
   // if (features.dialogs) {
   //   initDialogs(sceneData.dialogs);
   // }
+  engine.addSystem(new UIMessageSystem());
 };

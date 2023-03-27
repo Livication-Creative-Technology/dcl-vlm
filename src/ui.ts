@@ -1,11 +1,12 @@
-import { TMessageConfig } from "./types/Message";
+import { TMessage, TMessageConfig } from "./types/Message";
+import { TWebSocketMessage } from "./types/WebSocketMessage";
 
 const uiCanvas = new UICanvas();
 
 export class UIMessageSystem implements ISystem {
   static alertText: UIMessage;
   static timer: number = 0;
-  static delay: number = 3;
+  static delay: number = 5;
 
   update(dt: number) {
     if (UIMessageSystem.timer < UIMessageSystem.delay) {
@@ -24,6 +25,9 @@ export class UIMessageSystem implements ISystem {
     value: string,
     messageOptions: TMessageConfig
   ) => {
+    if (messageOptions.delay) {
+      this.delay = messageOptions.delay;
+    }
     if (!this.alertText) {
       this.timer = 0;
       this.alertText = new UIMessage(value, messageOptions);
@@ -34,8 +38,6 @@ export class UIMessageSystem implements ISystem {
     }
   };
 }
-
-engine.addSystem(new UIMessageSystem());
 
 class UIMessage extends UIText {
   vAlign: string = "center";
@@ -53,10 +55,13 @@ class UIMessage extends UIText {
 
     const { color, fontSize } = _messageOptions;
     this.value = value;
-    this.fontSize = fontSize || 16;
+    this.fontSize = fontSize || 32;
     if (!color) {
       return;
     }
+
+    const capitalizedColor = color.charAt(0).toUpperCase() + color.slice(1);
+
     switch (color.toLowerCase()) {
       case "black":
         this.outlineColor = Color4.White();
@@ -68,10 +73,14 @@ class UIMessage extends UIText {
       case "red":
       case "teal":
       case "yellow":
-        this.color = Color4[color.charAt(0).toUpperCase()]();
+        this.color = Color4[capitalizedColor]();
         break;
       default:
         this.color = Color4.White();
     }
   }
 }
+
+export const sendUiMessage = (message: TMessage) => {
+  UIMessageSystem.show(message.text, message.config);
+};

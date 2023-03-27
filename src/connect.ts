@@ -41,6 +41,7 @@ import {
   runLocalServer,
   runStagingServer,
 } from "./environment";
+import { sendUiMessage } from "./ui";
 
 export let sceneDataUrl = "wss://api.dcl-vlm.io/wss/";
 
@@ -123,32 +124,35 @@ export const connectCMS = async () => {
 
     socket.onmessage = (event) => {
       // log(`VLM-DEBUG: socket event | `, event);
-      const message: TWebSocketMessage = JSON.parse(event.data);
+      const wsMessage: TWebSocketMessage = JSON.parse(event.data);
       // log(`VLM-DEBUG: received message to ${message.action} ${message.entity || ""} ${message.property || ""}`);
 
-      if (!message.sceneData && !message.entityData) {
+      if (!wsMessage.sceneData && !wsMessage.entityData && !wsMessage.message) {
         return;
       }
 
-      updateSceneData(message.sceneData);
-      updateSceneFeatures(message.features);
+      updateSceneData(wsMessage.sceneData);
+      updateSceneFeatures(wsMessage.features);
 
-      switch (message.action) {
+      switch (wsMessage.action) {
         case "init":
           if (!initialized) {
-            initScene(message);
+            initScene(wsMessage);
           }
           initialized = true;
           resolve();
           break;
         case "create":
-          createEntity(message);
+          createEntity(wsMessage);
           break;
         case "update":
-          updateEntity(message);
+          updateEntity(wsMessage);
           break;
         case "delete":
-          deleteEntity(message);
+          deleteEntity(wsMessage);
+          break;
+        case "message":
+          sendUiMessage(wsMessage.message);
           break;
       }
     };

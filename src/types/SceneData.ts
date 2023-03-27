@@ -24,3 +24,9 @@ export type TSceneFeatures = {
   moderation: boolean;
   [id: string]: boolean;
 };
+
+export enum EEntityType {
+  IMAGE,
+  VIDEO,
+  NFT
+}

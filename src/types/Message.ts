@@ -9,6 +9,7 @@ export type TMessage = {
 
 export type TMessageConfig = {
   color: string;
-  outlineColor: string;
-  fontSize: number;
+  outlineColor?: string;
+  fontSize?: number;
+  delay?: number;
 };
