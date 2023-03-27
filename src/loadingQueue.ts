@@ -46,10 +46,10 @@ export class LoadingQueue implements ISystem {
       this.loadNextItem();
       this.loadNextItem();
       this.loadNextItem();
-      log(`${LoadingQueue.items.length} items remain - frame delay: ${dt}`);
+      // log(`${LoadingQueue.items.length} items remain - frame delay: ${dt}`);
     } else if (LoadingQueue.items.length) {
       this.loadNextItem();
-      log(`${LoadingQueue.items.length} items remain - frame delay: ${dt}`);
+      // log(`${LoadingQueue.items.length} items remain - frame delay: ${dt}`);
     } else {
       log(`VLM Load in time was ${this.loadingTime} seconds`);
       Object.keys(imageInstances).forEach((key: string) => {
