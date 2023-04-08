@@ -509,7 +509,7 @@ export class StoredVideoCheckSystem implements ISystem {
       return;
     }
 
-    if (this.video.enableLiveStream && this.live && !this.instancesHidden) {
+    if (this.video.liveLink && this.video.enableLiveStream && this.live && !this.instancesHidden) {
       // If live stream is enabled and is live, skip the block for removing the video when "NONE" is the off type
     } else if (
       this.video.offType === EVideoSourceTypes.NONE &&
