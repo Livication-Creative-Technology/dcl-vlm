@@ -15,7 +15,7 @@ export const createImage = (imageConfig: TImageMaterialConfig, startVisible: boo
   if (!imageConfig.show) {
     return;
   }
-  return new StoredImageMaterial(imageConfig, startVisible);
+  return new StoredImageMaterial(imageConfig);
 };
 
 export const createImageInstance = (
@@ -73,7 +73,7 @@ export const updateImageInstance = (
   id: string
 ) => {
   const instance = imageInstances[id],
-    materialId = instance.materialId,
+    materialId = instance?.materialId,
     material = imageMaterials[materialId];
 
   if (!material) {
@@ -107,23 +107,23 @@ export const updateImageInstance = (
 };
 
 export const addImage = (id: string) => {
-  imageMaterials[id].showAll();
+  imageMaterials[id]?.showAll();
 };
 
 export const deleteImage = (id: string) => {
-  imageMaterials[id].delete();
+  imageMaterials[id]?.delete();
 };
 
 export const removeImage = (id: string) => {
-  imageMaterials[id].remove();
+  imageMaterials[id]?.remove();
 };
 
 export const removeImageInstance = (instanceId: string) => {
-  const materialId = imageInstances[instanceId].materialId;
-  imageMaterials[materialId].removeInstance(instanceId);
+  const materialId = imageInstances[instanceId]?.materialId;
+  imageMaterials[materialId]?.removeInstance(instanceId);
 };
 
 export const deleteImageInstance = (instanceId: string) => {
-  const materialId = imageInstances[instanceId].materialId;
-  imageMaterials[materialId].deleteInstance(instanceId);
+  const materialId = imageInstances[instanceId]?.materialId;
+  imageMaterials[materialId]?.deleteInstance(instanceId);
 };

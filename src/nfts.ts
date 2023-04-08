@@ -71,7 +71,7 @@ export const updateNftInstance = (
   id: string
 ) => {
   const instance = nftInstances[id],
-    materialId = instance.materialId,
+    materialId = instance?.materialId,
     material = nftConfigs[materialId];
 
   if (!material) {

@@ -2,7 +2,6 @@ import {
   sdkImageFlippedDimension,
   sdkImagesAreFlipped,
   sdkImagesFace,
-  sdkVideoFlippedDimension,
   sdkVideosAreFlipped,
   sdkVideosFace,
   vlmImagesFace,
@@ -47,18 +46,17 @@ export class StoredVideoMaterial
   albedoTexture?: VideoTexture | Texture;
   emissiveTexture?: VideoTexture | Texture;
   liveLink?: string;
-  playlist: string[];
+  playlist: string[] = [];
   playlistIndex: number = 0;
   enableLiveStream?: boolean;
   clickEvent?: TClickEvent;
   withCollisions: boolean;
   videoClipId?: string;
-  startVisible: boolean;
   public emissiveIntensity: number;
-  public offType: EVideoSourceTypes;
-  public offImageLink?: string;
+  public offType: EVideoSourceTypes = EVideoSourceTypes.NONE;
+  public offImageLink: string = "";
 
-  constructor(_config: TVideoMaterialConfig, startVisible: boolean = true) {
+  constructor(_config: TVideoMaterialConfig) {
     super(_config);
     this.id = _config.id;
     this.customId = _config.customId;
@@ -77,21 +75,17 @@ export class StoredVideoMaterial
       ? EVideoSourceTypes.LIVE
       : this.offType;
     this.updateTexture(this.liveLink);
-    this.startVisible = startVisible;
+    videoMaterials[this.id] = this;
 
     if (this.customId) {
       videoMaterials[this.customId] = videoMaterials[this.id];
     }
 
-    if (this.customRendering) {
-      return;
-    }
+    new StoredVideoCheckSystem(this);
 
     _config.instances.forEach((instance: TVideoInstanceConfig) => {
       this.createInstance(instance);
     });
-
-    new StoredVideoCheckSystem(this);
   }
 
   remove: CallableFunction = () => {
@@ -111,7 +105,7 @@ export class StoredVideoMaterial
 
   showAll: CallableFunction = () => {
     [...this.instanceIds].forEach((instanceId: string) => {
-      const visible = videoInstances[instanceId].show,
+      const visible = videoInstances[instanceId].show && !this.customRendering,
         parent = videoInstances[instanceId].parent || this.parent;
 
       if (!visible) {
@@ -129,6 +123,10 @@ export class StoredVideoMaterial
     videoInstances[_config.id] = new StoredVideoInstance(this, _config);
     if (_config.customId) {
       videoInstances[_config.customId] = videoInstances[_config.id];
+    }
+    if (!this.customRendering && !_config.customRendering) {
+      videoInstances[_config.id].add();
+      videoInstances[_config.id].getComponent(Transform).scale.setAll(0);
     }
     return videoInstances[_config.id];
   };
@@ -286,8 +284,12 @@ export class StoredVideoInstance
   implements ITransform
 {
   id: string;
+  show: boolean;
+  showing: boolean;
+  customId?: string;
   materialId: string;
   parent?: string;
+  customRendering?: boolean;
   position: TTransform;
   scale: TTransform;
   rotation: TTransform;
@@ -301,6 +303,9 @@ export class StoredVideoInstance
   constructor(_material: StoredVideoMaterial, _instance: TVideoInstanceConfig) {
     super(_material, _instance);
     this.id = _instance.id;
+    this.customId = _instance.customId;
+    this.customRendering =
+      _instance.customRendering || _material.customRendering;
     this.parent = _instance.parent || _material.parent;
     this.position = _instance.position;
     this.scale = _instance.scale;
@@ -315,12 +320,7 @@ export class StoredVideoInstance
   }
 
   add: CallableFunction = () => {
-    const parent = this.parent || videoMaterials[this.materialId].parent;
-    if (parent) {
-      this.updateParent(parent);
-    } else {
-      engine.addEntity(this);
-    }
+    engine.addEntity(this);
   };
 
   delete: CallableFunction = () => {
@@ -328,11 +328,11 @@ export class StoredVideoInstance
     if (this.customId) {
       delete videoInstances[this.customId];
     }
-    this.remove();
+    engine.removeEntity(this);
   };
 
   remove: CallableFunction = () => {
-    engine.removeEntity(this);
+      engine.removeEntity(this);
   };
 
   updateParent: CallableFunction = (parent: string) => {
@@ -382,7 +382,7 @@ export class StoredVideoInstance
   };
 
   textureModeIs: CallableFunction = (mode: EVideoSourceTypes) => {
-    return videoMaterials[this.materialId].textureMode == mode;
+    return videoMaterials?.[this.materialId]?.textureMode == mode;
   };
 
   applyCustomTransforms: CallableFunction = (
@@ -428,6 +428,7 @@ export class StoredVideoInstance
 export class StoredVideoCheckSystem implements ISystem {
   id: string;
   customId?: string;
+  customRendering?: boolean;
   timer: number = 0;
   dtDelay: number = 0;
   video: StoredVideoMaterial;
@@ -445,24 +446,30 @@ export class StoredVideoCheckSystem implements ISystem {
   constructor(_storedVideoMaterial: StoredVideoMaterial) {
     this.video = videoMaterials[_storedVideoMaterial.id];
     this.id = _storedVideoMaterial.id;
-    videoSystems[_storedVideoMaterial.id] = this;
-    if (_storedVideoMaterial.customId) {
-      this.customId = _storedVideoMaterial.customId;
+    this.customId = _storedVideoMaterial.customId;
+    this.customRendering = _storedVideoMaterial.customRendering;
+
+    videoSystems[this.id] = this;
+
+    if (this.customId) {
       videoSystems[this.customId] = this;
     }
-    engine.addSystem(videoSystems[_storedVideoMaterial.id]);
 
-    if (this.video.customRendering) {
+    if (this.customRendering) {
       this.stop();
     }
+
+    engine.addSystem(this);
   }
 
   start: CallableFunction = () => {
+    log("starting system");
     this.video.start();
     this.stopped = false;
   };
 
   stop: CallableFunction = () => {
+    log("stopping system");
     this.video.stop();
     this.stopped = true;
   };
@@ -481,11 +488,12 @@ export class StoredVideoCheckSystem implements ISystem {
     if (this.checkingStatus || this.stopped) {
       return;
     }
+    log("Not stopped or checking status...");
 
-    const playListBlank =
-        this.video.offType == EVideoSourceTypes.PLAYLIST &&
-        this.video.playlist &&
-        !this.video.playlist.filter((x) => x).length,
+    const playlistModeActive =
+        this.video.offType == EVideoSourceTypes.PLAYLIST && this.video.playlist,
+      playListBlank =
+        playlistModeActive && !this.video.playlist.filter((x) => x).length,
       imageBlank =
         this.video.offType == EVideoSourceTypes.IMAGE &&
         !this.video.offImageLink;
@@ -528,6 +536,7 @@ export class StoredVideoCheckSystem implements ISystem {
       this.video.offType = EVideoSourceTypes.NONE;
       return;
     }
+    log("Not in none mode...");
 
     ///////////////////////////////////////////////
     // We are NOT in NONE mode beyond this point.//
@@ -556,23 +565,25 @@ export class StoredVideoCheckSystem implements ISystem {
       this.playing = false;
       return;
     }
+    log("Not in image mode...");
+
     ////////////////////////////////////////////////
     // We are NOT in IMAGE mode beyond this point.//
     ////////////////////////////////////////////////
 
-    if (this.video?.textureMode !== EVideoSourceTypes.LIVE) {
+    if (this.video.textureMode !== EVideoSourceTypes.LIVE) {
       // If we ARE NOT in LIVE mode, skip this condition set
     } else if (!this.live) {
       // We ARE in LIVE mode.
       // If stream is DOWN, skip the next steps
       this.playing = false;
       return;
-    } else if (!this.video?.videoTexture?.playing) {
+    } else if (!this.video.videoTexture?.playing) {
       // We ARE in LIVE mode. Stream is LIVE.
       // If stream is live but not playing anything, start live video
-      this.video?.startLive();
+      this.video.startLive();
       this.playing = true;
-    } else if (this.video?.enableLiveStream) {
+    } else if (this.video.enableLiveStream) {
       // We ARE in LIVE mode. Stream is LIVE. Video is PLAYING. Stream is ENABLED.
       // Do nothing else.
       return;
@@ -581,6 +592,7 @@ export class StoredVideoCheckSystem implements ISystem {
       // Move on to switch to playlist.
       this.video.videoTexture.playing = false;
     }
+    log("Not in live mode...");
 
     ///////////////////////////////////////////////
     // We are NOT in LIVE mode beyond this point.//
@@ -590,8 +602,7 @@ export class StoredVideoCheckSystem implements ISystem {
     //           Off type must now be PLAYLIST.                //
     //If not, we need to account for something that was added.//
     ///////////////////////////////////////////////////////////
-
-    if (!this.video?.videoTexture?.playing) {
+    if (!this.video.videoTexture?.playing) {
       // If video is not playing, start the playlist.
       this.video.startPlaylist();
       this.playing = true;
@@ -600,7 +611,7 @@ export class StoredVideoCheckSystem implements ISystem {
       this.observer = onVideoEvent.add((data) => {
         if (
           this.video.textureMode !== EVideoSourceTypes.LIVE &&
-          data.videoClipId == this.video?.videoTexture?.videoClipId
+          data.videoClipId == this.video.videoTexture?.videoClipId
         ) {
           this.videoStatus = data.videoStatus;
           this.videoLength = Math.floor(data.totalVideoLength);
@@ -617,7 +628,7 @@ export class StoredVideoCheckSystem implements ISystem {
     }
 
     if (
-      this.video.playlist.length > 1 &&
+      this.video.playlist?.length >= 1 &&
       this.videoStatus > VideoStatus.READY &&
       this.timer >= this.videoLength
     ) {

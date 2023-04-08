@@ -123,9 +123,7 @@ export const connectCMS = () =>
     };
 
     socket.onmessage = async (event) => {
-      // log(`VLM-DEBUG: socket event | `, event);
       const wsMessage: TWebSocketMessage = JSON.parse(event.data);
-      // log(`VLM-DEBUG: received message to ${message.action} ${message.entity || ""} ${message.property || ""}`);
 
       if (!wsMessage.sceneData && !wsMessage.entityData && !wsMessage.message) {
         return;

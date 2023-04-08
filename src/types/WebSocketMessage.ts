@@ -8,6 +8,7 @@ import { TVideoInstanceConfig, TVideoMaterialConfig } from "./VideoScreen";
 
 export type TWebSocketMessage = {
   action: string;
+  property: string;
   sceneData: TSceneData;
   features: TSceneFeatures;
   entityData?: TEntityMaterialConfig | TVideoMaterialConfig | TImageMaterialConfig | TNFTConfig;

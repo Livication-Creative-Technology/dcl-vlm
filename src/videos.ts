@@ -18,7 +18,10 @@ export const createVideoScreen = (videoConfig: TVideoMaterialConfig) => {
   return new StoredVideoMaterial(videoConfig);
 };
 
-export const createVideoInstance = (material: StoredVideoMaterial, instance: TVideoInstanceConfig) => {
+export const createVideoInstance = (
+  material: StoredVideoMaterial,
+  instance: TVideoInstanceConfig
+) => {
   if (!material.show || !instance.show) {
     return;
   }
@@ -26,7 +29,11 @@ export const createVideoInstance = (material: StoredVideoMaterial, instance: TVi
   return videoMaterials[videoId].createInstance(instance);
 };
 
-export const updateVideoScreen = (videoConfig: TVideoMaterialConfig, property: string, id: string) => {
+export const updateVideoScreen = (
+  videoConfig: TVideoMaterialConfig,
+  property: string,
+  id: string
+) => {
   const video: StoredVideoMaterial = videoMaterials[videoConfig.id];
 
   if (!videoConfig || (!video && !videoConfig.show)) {
@@ -59,7 +66,7 @@ export const updateVideoScreen = (videoConfig: TVideoMaterialConfig, property: s
       video.emissiveIntensity = videoConfig.emission;
       break;
     case "offType":
-      video.offType = videoConfig.offType;
+      video.offType = videoConfig?.offType;
       break;
     case "offImage":
       video.updateOffImage(videoConfig.offImageLink);
@@ -71,9 +78,13 @@ export const updateVideoScreen = (videoConfig: TVideoMaterialConfig, property: s
   }
 };
 
-export const updateVideoInstance = (instanceConfig: TVideoInstanceConfig, property: string, id: string) => {
+export const updateVideoInstance = (
+  instanceConfig: TVideoInstanceConfig,
+  property: string,
+  id: string
+) => {
   const instance = videoInstances[id],
-    materialId = instance.materialId,
+    materialId = instance?.materialId,
     material = videoMaterials[materialId];
 
   if (!material) {
@@ -86,7 +97,13 @@ export const updateVideoInstance = (instanceConfig: TVideoInstanceConfig, proper
 
   switch (property) {
     case "visibility":
-      if (!material.show || !instanceConfig.show) {
+      if (
+        instance.customRendering &&
+        instanceConfig.show &&
+        !instance.showing
+      ) {
+        return;
+      } else if (!material.show || !instanceConfig.show) {
         material.removeInstance(instanceConfig.id);
       } else if (instance && instanceConfig.show) {
         material.addInstance(instanceConfig.id);
@@ -107,21 +124,21 @@ export const updateVideoInstance = (instanceConfig: TVideoInstanceConfig, proper
   }
 };
 export const addVideoScreen = (id: string) => {
-  videoMaterials[id].showAll();
+  videoMaterials[id]?.showAll();
 };
 export const removeVideoScreen = (id: string) => {
-  videoMaterials[id].remove();
+  videoMaterials[id]?.remove();
 };
 export const deleteVideoScreen = (id: string) => {
-  videoMaterials[id].delete();
+  videoMaterials[id]?.delete();
 };
 
 export const removeVideoInstance = (instanceId: string) => {
-  const materialId = videoInstances[instanceId].materialId;
-  videoMaterials[materialId].removeInstance(instanceId);
+  const materialId = videoInstances[instanceId]?.materialId;
+  videoMaterials[materialId]?.removeInstance(instanceId);
 };
 
 export const deleteVideoInstance = (instanceId: string) => {
-  const materialId = videoInstances[instanceId].materialId;
-  videoMaterials[materialId].deleteInstance(instanceId);
+  const materialId = videoInstances[instanceId]?.materialId;
+  videoMaterials[materialId]?.deleteInstance(instanceId);
 };

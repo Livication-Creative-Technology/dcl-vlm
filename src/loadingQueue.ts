@@ -1,6 +1,6 @@
 import { createImage } from "./images";
 import { createNft } from "./nfts";
-import { imageInstances } from "./storage";
+import { imageInstances, videoInstances } from "./storage";
 import {
   TImageMaterialConfig,
   TNFTConfig,
@@ -22,11 +22,11 @@ export class LoadingQueue implements ISystem {
 
   constructor(message: TWebSocketMessage) {
     log("constructing loading queue");
-    message.sceneData.images?.forEach((image: TImageMaterialConfig) => {
-      LoadingQueue.items.push({ type: EEntityType.IMAGE, data: image });
-    });
     message.sceneData.videoScreens?.forEach((video: TVideoMaterialConfig) => {
       LoadingQueue.items.push({ type: EEntityType.VIDEO, data: video });
+    });
+    message.sceneData.images?.forEach((image: TImageMaterialConfig) => {
+      LoadingQueue.items.push({ type: EEntityType.IMAGE, data: image });
     });
     message.sceneData.nfts?.forEach((nft: TNFTConfig) => {
       LoadingQueue.items.push({ type: EEntityType.NFT, data: nft });
@@ -52,9 +52,6 @@ export class LoadingQueue implements ISystem {
       // log(`${LoadingQueue.items.length} items remain - frame delay: ${dt}`);
     } else {
       log(`VLM Load in time was ${this.loadingTime} seconds`);
-      Object.keys(imageInstances).forEach((key: string) => {
-        imageInstances[key].add();
-      });
       engine.removeSystem(this);
       this.resolvePromise();
     }
@@ -69,7 +66,7 @@ export class LoadingQueue implements ISystem {
     }
     switch (nextItem.type) {
       case EEntityType.IMAGE:
-        createImage(nextItem.data as TImageMaterialConfig, false);
+        createImage(nextItem.data as TImageMaterialConfig);
         break;
       case EEntityType.VIDEO:
         createVideoScreen(nextItem.data as TVideoMaterialConfig);

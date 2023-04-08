@@ -40,14 +40,14 @@ export class StoredImageMaterial
   metallic: number = 0;
   withCollisions?: boolean;
   isTransparent: boolean;
-  clickEvent?: TClickEvent;
+  clickEvent: TClickEvent;
   startVisible: boolean;
 
   constructor(_config: TImageMaterialConfig, startVisible: boolean = true) {
     super();
     this.id = _config.id;
     this.customId = _config.customId;
-    this.customRendering = !!_config.customRendering;
+    this.customRendering = _config.customRendering;
     this.parent = _config.parent;
     this.show = _config.show;
     this.emissiveIntensity = _config.emission || 1;
@@ -62,11 +62,6 @@ export class StoredImageMaterial
     if (this.customId) {
       imageMaterials[this.customId] = imageMaterials[this.id];
     }
-
-    if (this.customRendering || _config.instances.length < 1) {
-      return;
-    }
-
     _config.instances.forEach((instance: TImageInstanceConfig) => {
       this.createInstance(instance);
     });
@@ -89,7 +84,7 @@ export class StoredImageMaterial
 
   showAll: CallableFunction = () => {
     [...this.instanceIds].forEach((instanceId: string) => {
-      const visible = imageInstances[instanceId].show,
+      const visible = imageInstances[instanceId]?.show,
         parent = imageInstances[instanceId].parent || this.parent;
 
       if (!visible) {
@@ -104,7 +99,7 @@ export class StoredImageMaterial
 
   updateParent: CallableFunction = (parent: string) => {
     [...this.instanceIds].forEach((instanceId: string) => {
-      if (imageInstances[instanceId].parent === this.parent) {
+      if (imageInstances[instanceId]?.parent === this.parent) {
         imageInstances[instanceId].updateParent(parent);
       }
     });
@@ -156,9 +151,7 @@ export class StoredImageMaterial
   createInstance: CallableFunction = (_config: TImageInstanceConfig) => {
     this.instanceIds.push(_config.id);
     imageInstances[_config.id] = new StoredImageInstance(this, _config);
-    if (this.startVisible) {
-      imageInstances[_config.id].add();
-    }
+
     return imageInstances[_config.id];
   };
 
@@ -183,6 +176,8 @@ export class StoredImageInstance
   implements ITransform
 {
   id: string;
+  show: boolean;
+  showing: boolean;
   materialId: string;
   parent?: string;
   position: TTransform;
@@ -214,10 +209,16 @@ export class StoredImageInstance
     this.addComponent(shape);
     this.addComponent(_material);
     this.updateTransform(this.position, this.scale, this.rotation);
-    this.updateDefaultClickEvent(_material.clickEvent);
+    imageInstances[this.id] = this;
 
-    if (this.parent && this.show) {
+    this.updateDefaultClickEvent(this.defaultClickEvent);
+
+    imageInstances[this.id].getComponentOrNull(OnPointerDown);
+
+    if (this.parent && this.show && !this.customRendering) {
       this.updateParent(this.parent);
+    } else if (this.show) {
+      this.add();
     }
 
     if (this.customId) {
@@ -226,7 +227,9 @@ export class StoredImageInstance
   }
 
   add: CallableFunction = () => {
-    engine.addEntity(this);
+    if (this.show) {
+      engine.addEntity(this);
+    }
   };
 
   delete: CallableFunction = () => {
@@ -324,11 +327,11 @@ export class StoredImageInstance
     newDefaultClickEvent: TClickEvent
   ) => {
     this.defaultClickEvent = newDefaultClickEvent;
-    this.updateClickEvent();
+    this.updateClickEvent(this.clickEvent);
   };
 
   updateClickEvent: CallableFunction = (newClickEvent?: TClickEvent) => {
-    if (newClickEvent && typeof newClickEvent !== "undefined") {
+    if (typeof newClickEvent !== "undefined") {
       this.clickEvent = newClickEvent;
     }
 
@@ -367,9 +370,7 @@ export class StoredImageInstance
       case EClickEventType.EXTERNAL: //external link
         pointerDownEvent = new OnPointerDown(
           () => {
-            if (clickEvent.externalLink) {
-              openExternalURL(clickEvent.externalLink);
-            }
+            openExternalURL(clickEvent.externalLink);
             this.trackClickEvent(
               clickEvent,
               `click-event-(external-link)-${this.customId || this.id}`
@@ -379,7 +380,7 @@ export class StoredImageInstance
         );
         break;
       case EClickEventType.SOUND: //play a sound
-        const clip = new AudioClip(clickEvent.sound || "");
+        const clip = new AudioClip(clickEvent.sound);
         const source = new AudioSource(clip);
         pointerDownEvent = new OnPointerDown(
           () => {
@@ -395,13 +396,12 @@ export class StoredImageInstance
       case EClickEventType.MOVE: // move player
         pointerDownEvent = new OnPointerDown(
           () => {
-            let cameraTarget;
-            if (clickEvent?.moveTo?.setCameraTarget) {
-              cameraTarget = clickEvent.moveTo.cameraTarget;
-            }
-            if (clickEvent?.moveTo) {
-              movePlayerTo(clickEvent.moveTo.position, cameraTarget);
-            }
+            movePlayerTo(
+              clickEvent.moveTo.position,
+              clickEvent.moveTo.setCameraTarget
+                ? clickEvent.moveTo.cameraTarget
+                : null
+            );
             this.trackClickEvent(
               clickEvent,
               `click-event-(move-player)-${this.customId || this.id}`
@@ -413,9 +413,7 @@ export class StoredImageInstance
       case EClickEventType.TELEPORT: // teleport player
         pointerDownEvent = new OnPointerDown(
           () => {
-            if (clickEvent.teleportTo) {
-              teleportTo(clickEvent.teleportTo);
-            }
+            teleportTo(clickEvent.teleportTo);
             this.trackClickEvent(
               clickEvent,
               `click-event-(teleport-player)-${this.customId || this.id}`

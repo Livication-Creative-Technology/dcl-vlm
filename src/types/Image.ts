@@ -6,7 +6,7 @@ export type TImageMaterialConfig = TEntityMaterialConfig & {
   id: string;
   customId?: string;
   customRendering?: boolean;
-  clickEvent?: TClickEvent;
+  clickEvent: TClickEvent;
   emission: number;
   imageLink: string;
   instances: TImageInstanceConfig[];
@@ -20,7 +20,7 @@ export type TImageInstanceConfig = TEntityInstanceConfig & {
   id: string;
   customId?: string;
   customRendering?: boolean;
-  clickEvent?: TClickEvent;
+  clickEvent: TClickEvent;
   name: string;
   parent?: string;
   position: TTransform;
