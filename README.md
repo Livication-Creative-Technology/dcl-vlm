@@ -43,6 +43,7 @@ const updateWidget = (config: TCustomizationConfig) => {
 // UPDATE FUNCTION
 //
 // runs each time a customization's value is changed and passes in the new value in the config argument
+// will also run on scene load if no init function is specified
 //
 // config.id represents the customization's id. Can be used to have one function that processes different customizations dynamically. 
 // config.value represents the customization's value. Either true,false, a text string, or the id of a selection in a dropdown menu. 
